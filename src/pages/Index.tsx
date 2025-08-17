@@ -1,11 +1,123 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { SessionStorage } from '@/lib/storage';
+import { formatDuration } from '@/lib/utils';
+import { Timer, History, TrendingUp, Clock } from 'lucide-react';
 
 const Index = () => {
+  const navigate = useNavigate();
+  const stats = SessionStorage.getSessionStats();
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background px-4 py-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header with animated title */}
+        <div className="text-center mb-12 animate-fade-in">
+          <div className="relative mb-6">
+            <h1 className="text-6xl font-bold text-foreground mb-2 animate-scale-in">
+              Effortless
+            </h1>
+            <div className="text-4xl font-light text-primary gradient-primary bg-clip-text text-transparent">
+              Sessions
+            </div>
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full animate-pulse-glow" />
+          </div>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Track your focus sessions, study time, and productivity with a clean, distraction-free interface
+          </p>
+        </div>
+
+        {/* Quick Stats */}
+        {stats.totalSessions > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-fade-in">
+            <Card className="gradient-card shadow-card border-border">
+              <CardContent className="p-6 text-center">
+                <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">
+                  {formatDuration(stats.weeklyTime)}
+                </p>
+                <p className="text-sm text-muted-foreground">This Week</p>
+              </CardContent>
+            </Card>
+
+            <Card className="gradient-card shadow-card border-border">
+              <CardContent className="p-6 text-center">
+                <TrendingUp className="w-8 h-8 text-primary mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">
+                  {stats.totalSessions}
+                </p>
+                <p className="text-sm text-muted-foreground">Total Sessions</p>
+              </CardContent>
+            </Card>
+
+            <Card className="gradient-card shadow-card border-border">
+              <CardContent className="p-6 text-center">
+                <Timer className="w-8 h-8 text-primary mx-auto mb-2" />
+                <p className="text-2xl font-bold text-foreground">
+                  {formatDuration(Math.round(stats.avgSessionLength))}
+                </p>
+                <p className="text-sm text-muted-foreground">Average Session</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Main Action Buttons */}
+        <div className="max-w-md mx-auto space-y-4 animate-scale-in">
+          <Button
+            variant="gradient"
+            size="lg"
+            onClick={() => navigate('/start')}
+            className="w-full h-16 text-lg shadow-glow hover:shadow-hover transition-smooth"
+          >
+            <Timer className="w-6 h-6 mr-3" />
+            Start Session
+          </Button>
+
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/history')}
+            className="w-full h-16 text-lg hover:bg-secondary transition-smooth"
+          >
+            <History className="w-6 h-6 mr-3" />
+            View History
+          </Button>
+        </div>
+
+        {/* Feature highlights */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in">
+          <div className="text-center">
+            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Timer className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Focus Timer</h3>
+            <p className="text-muted-foreground">
+              Clean, distraction-free timer with pause, resume, and stop controls
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <TrendingUp className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Progress Tracking</h3>
+            <p className="text-muted-foreground">
+              Monitor your productivity with detailed statistics and analytics
+            </p>
+          </div>
+
+          <div className="text-center">
+            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <History className="w-6 h-6 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Session History</h3>
+            <p className="text-muted-foreground">
+              Review past sessions with filtering and sorting options
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
