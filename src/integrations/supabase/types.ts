@@ -14,7 +14,157 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      room_participants: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          joined_at: string
+          room_id: string
+          session_duration: number | null
+          session_title: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          joined_at?: string
+          room_id: string
+          session_duration?: number | null
+          session_title?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          joined_at?: string
+          room_id?: string
+          session_duration?: number | null
+          session_title?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_participants_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_sessions: {
+        Row: {
+          actual_duration: number | null
+          category: string | null
+          created_at: string
+          duration: number
+          end_time: string | null
+          id: string
+          room_id: string
+          start_time: string
+          status: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          actual_duration?: number | null
+          category?: string | null
+          created_at?: string
+          duration: number
+          end_time?: string | null
+          id?: string
+          room_id: string
+          start_time?: string
+          status?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          actual_duration?: number | null
+          category?: string | null
+          created_at?: string
+          duration?: number
+          end_time?: string | null
+          id?: string
+          room_id?: string
+          start_time?: string
+          status?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_sessions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          category: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_participants: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_participants?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
