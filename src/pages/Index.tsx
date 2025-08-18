@@ -3,15 +3,59 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { SessionStorage } from '@/lib/storage';
 import { formatDuration } from '@/lib/utils';
-import { Timer, History, TrendingUp, Clock } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Timer, History, TrendingUp, Clock, LogIn, LogOut, Users } from 'lucide-react';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user, signOut, loading } = useAuth();
   const stats = SessionStorage.getSessionStats();
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       <div className="max-w-4xl mx-auto">
+        {/* Auth Status Bar */}
+        <div className="flex justify-between items-center mb-8">
+          <div className="flex items-center gap-2">
+            {user && (
+              <span className="text-sm text-muted-foreground">
+                Welcome, {user.email}
+              </span>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {user ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/rooms')}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Rooms
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/auth')}
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            )}
+          </div>
+        </div>
+
         {/* Header with animated title */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="relative mb-6">
