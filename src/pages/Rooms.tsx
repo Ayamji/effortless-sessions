@@ -32,7 +32,49 @@ const Rooms = () => {
       return;
     }
     fetchRooms();
+    setupRealtimeSubscriptions();
   }, [user, navigate]);
+
+  useEffect(() => {
+    const cleanup = setupRealtimeSubscriptions();
+    return cleanup;
+  }, []);
+
+  const setupRealtimeSubscriptions = () => {
+    // Subscribe to rooms changes
+    const roomsChannel = supabase
+      .channel('rooms_list')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'rooms'
+        },
+        () => {
+          console.log('Rooms changed, refreshing...');
+          fetchRooms();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'room_participants'
+        },
+        () => {
+          console.log('Participants changed, refreshing rooms...');
+          fetchRooms();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('Cleaning up rooms subscriptions');
+      supabase.removeChannel(roomsChannel);
+    };
+  };
 
   const fetchRooms = async () => {
     try {
@@ -40,7 +82,7 @@ const Rooms = () => {
         .from('rooms')
         .select(`
           *,
-          room_participants!inner(count)
+          room_participants(count)
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
@@ -136,10 +178,10 @@ const Rooms = () => {
 
   const getCategoryColor = (category: SessionCategory) => {
     const colors = {
-      Study: 'bg-blue-500/20 text-blue-300',
-      Work: 'bg-green-500/20 text-green-300',
-      Fitness: 'bg-orange-500/20 text-orange-300',
-      Custom: 'bg-purple-500/20 text-purple-300'
+      Study: 'bg-primary/20 text-primary',
+      Work: 'bg-success/20 text-success',
+      Fitness: 'bg-warning/20 text-warning',
+      Custom: 'bg-accent text-accent-foreground'
     };
     return colors[category];
   };
@@ -153,7 +195,7 @@ const Rooms = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-dark to-surface-darker p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -161,12 +203,12 @@ const Rooms = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="text-text-secondary hover:text-text-primary"
+              className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-3xl font-bold bg-gradient-elegant bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Study Rooms
             </h1>
           </div>
@@ -178,7 +220,7 @@ const Rooms = () => {
                   Create Room
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-surface border-accent/20">
+              <DialogContent className="bg-card border-border">
                 <DialogHeader>
                   <DialogTitle>Create New Room</DialogTitle>
                 </DialogHeader>
@@ -222,7 +264,7 @@ const Rooms = () => {
                 </div>
               </DialogContent>
             </Dialog>
-            <Button variant="outline" onClick={signOut} className="text-text-secondary">
+            <Button variant="outline" onClick={signOut} className="text-muted-foreground">
               <LogOut className="h-4 w-4 mr-2" />
               Sign Out
             </Button>
@@ -233,22 +275,22 @@ const Rooms = () => {
           {rooms.map((room) => (
             <Card
               key={room.id}
-              className="bg-surface/80 backdrop-blur-sm border-accent/20 hover:border-accent/40 transition-all cursor-pointer"
+              className="gradient-card shadow-card border-border hover:border-primary/40 transition-smooth cursor-pointer"
               onClick={() => joinRoom(room.id)}
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg text-text-primary">{room.name}</CardTitle>
+                  <CardTitle className="text-lg text-foreground">{room.name}</CardTitle>
                   <Badge className={getCategoryColor(room.category)}>
                     {room.category}
                   </Badge>
                 </div>
                 {room.description && (
-                  <p className="text-sm text-text-secondary">{room.description}</p>
+                  <p className="text-sm text-muted-foreground">{room.description}</p>
                 )}
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between text-sm text-text-secondary">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4" />
                     <span>{room.participant_count || 0}/{room.max_participants}</span>
@@ -262,8 +304,8 @@ const Rooms = () => {
 
         {rooms.length === 0 && (
           <div className="text-center py-12">
-            <h3 className="text-xl font-semibold text-text-primary mb-2">No rooms available</h3>
-            <p className="text-text-secondary mb-4">Create the first room to get started!</p>
+            <h3 className="text-xl font-semibold text-foreground mb-2">No rooms available</h3>
+            <p className="text-muted-foreground mb-4">Create the first room to get started!</p>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Create Room

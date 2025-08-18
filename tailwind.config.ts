@@ -60,6 +60,16 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				text: {
+					primary: 'hsl(var(--text-primary))',
+					secondary: 'hsl(var(--text-secondary))',
+					muted: 'hsl(var(--text-muted))'
+				},
+				surface: {
+					DEFAULT: 'hsl(var(--surface))',
+					dark: 'hsl(var(--surface-dark))',
+					darker: 'hsl(var(--surface-darker))'
 				}
 			},
 			borderRadius: {

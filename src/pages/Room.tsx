@@ -51,7 +51,9 @@ const Room = () => {
     }
 
     fetchRoomData();
-    setupRealtimeSubscriptions();
+    const cleanup = setupRealtimeSubscriptions();
+    
+    return cleanup;
   }, [user, roomId, navigate]);
 
   const fetchRoomData = async () => {
@@ -71,7 +73,7 @@ const Room = () => {
         .from('room_participants')
         .select(`
           *,
-          profiles!inner (
+          profiles (
             username,
             avatar_url
           )
@@ -87,7 +89,7 @@ const Room = () => {
         .from('room_sessions')
         .select(`
           *,
-          profiles!inner (
+          profiles (
             username
           )
         `)
@@ -123,6 +125,7 @@ const Room = () => {
           filter: `room_id=eq.${roomId}`
         },
         () => {
+          console.log('Participants changed, refreshing...');
           fetchRoomData();
         }
       )
@@ -140,12 +143,14 @@ const Room = () => {
           filter: `room_id=eq.${roomId}`
         },
         () => {
+          console.log('New session added, refreshing...');
           fetchRoomData();
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Cleaning up realtime subscriptions');
       supabase.removeChannel(participantsChannel);
       supabase.removeChannel(sessionsChannel);
     };
@@ -277,16 +282,16 @@ const Room = () => {
 
   const getCategoryColor = (category: SessionCategory) => {
     const colors = {
-      Study: 'bg-blue-500/20 text-blue-300',
-      Work: 'bg-green-500/20 text-green-300',
-      Fitness: 'bg-orange-500/20 text-orange-300',
-      Custom: 'bg-purple-500/20 text-purple-300'
+      Study: 'bg-primary/20 text-primary',
+      Work: 'bg-success/20 text-success',
+      Fitness: 'bg-warning/20 text-warning',
+      Custom: 'bg-accent text-accent-foreground'
     };
     return colors[category];
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-dark to-surface-darker p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -294,15 +299,15 @@ const Room = () => {
               variant="ghost"
               size="sm"
               onClick={() => navigate('/rooms')}
-              className="text-text-secondary hover:text-text-primary"
+              className="text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Rooms
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-text-primary">{room.name}</h1>
+              <h1 className="text-3xl font-bold text-foreground">{room.name}</h1>
               {room.description && (
-                <p className="text-text-secondary">{room.description}</p>
+                <p className="text-muted-foreground">{room.description}</p>
               )}
             </div>
             <Badge className={getCategoryColor(room.category)}>
@@ -318,7 +323,7 @@ const Room = () => {
                     Start Session
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="bg-surface border-accent/20">
+                <DialogContent className="bg-card border-border">
                   <DialogHeader>
                     <DialogTitle>Start New Session</DialogTitle>
                   </DialogHeader>
@@ -365,7 +370,7 @@ const Room = () => {
                 </DialogContent>
               </Dialog>
             )}
-            <Button variant="outline" onClick={leaveRoom} className="text-text-secondary">
+            <Button variant="outline" onClick={leaveRoom} className="text-muted-foreground">
               <LogOut className="h-4 w-4 mr-2" />
               Leave Room
             </Button>
@@ -376,9 +381,9 @@ const Room = () => {
           {/* Timer and Active Session */}
           <div className="lg:col-span-2 space-y-6">
             {timerState.isRunning && (
-              <Card className="bg-surface/80 backdrop-blur-sm border-accent/20">
+              <Card className="gradient-card shadow-card border-border">
                 <CardHeader>
-                  <CardTitle className="text-xl text-text-primary">Active Session</CardTitle>
+                  <CardTitle className="text-xl text-foreground">Active Session</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <TimerDisplay
@@ -393,9 +398,9 @@ const Room = () => {
             )}
 
             {/* Recent Sessions */}
-            <Card className="bg-surface/80 backdrop-blur-sm border-accent/20">
+            <Card className="gradient-card shadow-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-text-primary">
+                <CardTitle className="flex items-center gap-2 text-foreground">
                   <Clock className="h-5 w-5" />
                   Recent Sessions
                 </CardTitle>
@@ -406,11 +411,11 @@ const Room = () => {
                     {recentSessions.map((session) => (
                       <div
                         key={session.id}
-                        className="flex items-center justify-between p-3 bg-surface-darker/50 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
                       >
                         <div>
-                          <h4 className="font-medium text-text-primary">{session.title}</h4>
-                          <div className="flex items-center gap-2 text-sm text-text-secondary">
+                          <h4 className="font-medium text-foreground">{session.title}</h4>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <span>{session.profiles?.username || 'Unknown'}</span>
                             <span>•</span>
                             <Badge className={getCategoryColor(session.category)} variant="outline">
@@ -419,10 +424,10 @@ const Room = () => {
                           </div>
                         </div>
                         <div className="text-right text-sm">
-                          <div className="text-text-primary font-medium">
+                          <div className="text-foreground font-medium">
                             {formatDuration(session.actual_duration || session.duration)}
                           </div>
-                          <div className="text-text-secondary">
+                          <div className="text-muted-foreground">
                             {new Date(session.created_at).toLocaleDateString()}
                           </div>
                         </div>
@@ -430,7 +435,7 @@ const Room = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center text-text-secondary py-8">
+                  <p className="text-center text-muted-foreground py-8">
                     No sessions yet. Start the first one!
                   </p>
                 )}
@@ -439,9 +444,9 @@ const Room = () => {
           </div>
 
           {/* Participants */}
-          <Card className="bg-surface/80 backdrop-blur-sm border-accent/20">
+          <Card className="gradient-card shadow-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-text-primary">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Users className="h-5 w-5" />
                 Participants ({participants.length}/{room.max_participants})
               </CardTitle>
@@ -451,17 +456,17 @@ const Room = () => {
                 {participants.map((participant) => (
                   <div
                     key={participant.id}
-                    className="flex items-center justify-between p-3 bg-surface-darker/50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
                   >
                     <div>
-                      <div className="font-medium text-text-primary">
+                      <div className="font-medium text-foreground">
                         {participant.profiles?.username || 'Anonymous'}
                         {participant.user_id === user?.id && (
                           <span className="text-xs text-primary ml-2">(You)</span>
                         )}
                       </div>
                       {participant.session_title && (
-                        <div className="text-sm text-text-secondary">
+                        <div className="text-sm text-muted-foreground">
                           Working on: {participant.session_title}
                           {participant.session_duration && (
                             <span className="ml-2">({participant.session_duration}m)</span>
@@ -469,7 +474,7 @@ const Room = () => {
                         </div>
                       )}
                     </div>
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-success rounded-full"></div>
                   </div>
                 ))}
               </div>
