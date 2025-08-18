@@ -200,10 +200,11 @@ export default function StartSession() {
           <Card className="gradient-card shadow-card border-border">
             <CardContent className="p-8">
               <TimerDisplay
-                timeRemaining={timerState.timeRemaining}
-                totalTime={timerState.totalTime}
-                isRunning={timerState.isRunning}
-                isPaused={timerState.isPaused}
+                timerState={timerState}
+                setTimerState={setTimerState}
+                onComplete={completeSession}
+                title={title}
+                category={category}
               />
 
               <div className="flex justify-center gap-4 mt-8">
