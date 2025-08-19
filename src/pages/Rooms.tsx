@@ -78,25 +78,34 @@ const Rooms = () => {
 
   const fetchRooms = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch rooms and participant counts separately
+      const { data: roomsData, error: roomsError } = await supabase
         .from('rooms')
-        .select(`
-          *,
-          room_participants(count)
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (roomsError) throw roomsError;
+
+      // Get participant counts for each room
+      const roomsWithCount = await Promise.all(
+        (roomsData || []).map(async (room) => {
+          const { count } = await supabase
+            .from('room_participants')
+            .select('*', { count: 'exact', head: true })
+            .eq('room_id', room.id)
+            .eq('is_active', true);
+          
+          return {
+            ...room,
+            participant_count: count || 0
+          };
+        })
+      );
       
-      // Add participant count to rooms
-      const roomsWithCount = data?.map(room => ({
-        ...room,
-        participant_count: room.room_participants?.length || 0
-      })) as Room[] || [];
-      
-      setRooms(roomsWithCount);
+      setRooms(roomsWithCount as Room[]);
     } catch (error: any) {
+      console.error('Error fetching rooms:', error);
       toast({
         title: 'Error',
         description: 'Failed to fetch rooms',
