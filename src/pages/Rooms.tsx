@@ -158,7 +158,7 @@ const Rooms = () => {
         .select('id')
         .eq('room_id', roomId)
         .eq('user_id', user!.id)
-        .single();
+        .maybeSingle();
 
       if (existingParticipant) {
         navigate(`/room/${roomId}`);
@@ -177,6 +177,7 @@ const Rooms = () => {
 
       navigate(`/room/${roomId}`);
     } catch (error: any) {
+      console.error('Error joining room:', error);
       toast({
         title: 'Error',
         description: 'Failed to join room',
