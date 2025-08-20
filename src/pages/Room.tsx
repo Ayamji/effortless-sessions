@@ -63,7 +63,7 @@ const Room = () => {
         .from('rooms')
         .select('*')
         .eq('id', roomId)
-        .single();
+        .maybeSingle();
 
       if (roomError) throw roomError;
       setRoom(roomData as RoomType);

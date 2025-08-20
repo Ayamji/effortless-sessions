@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Room, SessionCategory } from '@/lib/types';
-import { Plus, Users, ArrowLeft, LogOut } from 'lucide-react';
+import { Plus, Users, ArrowLeft, LogOut, Trash2 } from 'lucide-react';
 
 const categories: SessionCategory[] = ['Study', 'Work', 'Fitness', 'Custom'];
 
@@ -186,6 +186,40 @@ const Rooms = () => {
     }
   };
 
+  const deleteRoom = async (roomId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent room joining when clicking delete
+    
+    try {
+      // First remove all participants
+      await supabase
+        .from('room_participants')
+        .delete()
+        .eq('room_id', roomId);
+
+      // Then delete the room
+      const { error } = await supabase
+        .from('rooms')
+        .update({ is_active: false })
+        .eq('id', roomId)
+        .eq('creator_id', user!.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Room deleted successfully!'
+      });
+
+      fetchRooms();
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete room',
+        variant: 'destructive'
+      });
+    }
+  };
+
   const getCategoryColor = (category: SessionCategory) => {
     const colors = {
       Study: 'bg-primary/20 text-primary',
@@ -291,9 +325,21 @@ const Rooms = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg text-foreground">{room.name}</CardTitle>
-                  <Badge className={getCategoryColor(room.category)}>
-                    {room.category}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getCategoryColor(room.category)}>
+                      {room.category}
+                    </Badge>
+                    {room.creator_id === user?.id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => deleteRoom(room.id, e)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10 p-1 h-auto"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 {room.description && (
                   <p className="text-sm text-muted-foreground">{room.description}</p>
