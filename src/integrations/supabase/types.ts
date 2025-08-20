@@ -71,6 +71,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_room_participants_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_participants_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "room_participants_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
@@ -121,6 +135,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_room_sessions_room_id"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_room_sessions_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "room_sessions_room_id_fkey"
             columns: ["room_id"]
             isOneToOne: false
@@ -163,7 +191,15 @@ export type Database = {
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_rooms_creator_id"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
     }
     Views: {
