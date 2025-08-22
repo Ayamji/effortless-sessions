@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Room as RoomType, RoomParticipant, SessionCategory, RoomSession } from '@/lib/types';
 import { TimerDisplay } from '@/components/TimerDisplay';
+import RoomMusic from '@/components/RoomMusic';
 import { ArrowLeft, Users, Play, LogOut, Clock } from 'lucide-react';
 
 const categories: SessionCategory[] = ['Study', 'Work', 'Fitness', 'Custom'];
@@ -30,6 +31,7 @@ const Room = () => {
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionCategory, setSessionCategory] = useState<SessionCategory>('Study');
   const [sessionDuration, setSessionDuration] = useState(25);
+  const [musicUpdating, setMusicUpdating] = useState(false);
 
   // Timer state
   const [timerState, setTimerState] = useState({
@@ -149,10 +151,29 @@ const Room = () => {
       )
       .subscribe();
 
+    // Subscribe to room music changes
+    const roomChannel = supabase
+      .channel(`room_music_${roomId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'rooms',
+          filter: `id=eq.${roomId}`
+        },
+        () => {
+          console.log('Room music changed, refreshing...');
+          fetchRoomData();
+        }
+      )
+      .subscribe();
+
     return () => {
       console.log('Cleaning up realtime subscriptions');
       supabase.removeChannel(participantsChannel);
       supabase.removeChannel(sessionsChannel);
+      supabase.removeChannel(roomChannel);
     };
   };
 
@@ -252,6 +273,25 @@ const Room = () => {
         description: 'Failed to save session',
         variant: 'destructive'
       });
+    }
+  };
+
+  const updateMusic = async (url: string, title: string) => {
+    setMusicUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('rooms')
+        .update({
+          music_url: url,
+          music_title: title,
+          music_updated_by: user!.id,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', roomId);
+
+      if (error) throw error;
+    } finally {
+      setMusicUpdating(false);
     }
   };
 
@@ -444,42 +484,52 @@ const Room = () => {
           </div>
 
           {/* Participants */}
-          <Card className="gradient-card shadow-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <Users className="h-5 w-5" />
-                Participants ({participants.length}/{room.max_participants})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {participants.map((participant) => (
-                  <div
-                    key={participant.id}
-                    className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
-                  >
-                    <div>
-                      <div className="font-medium text-foreground">
-                        {participant.profiles?.username || 'Anonymous'}
-                        {participant.user_id === user?.id && (
-                          <span className="text-xs text-primary ml-2">(You)</span>
-                        )}
-                      </div>
-                      {participant.session_title && (
-                        <div className="text-sm text-muted-foreground">
-                          Working on: {participant.session_title}
-                          {participant.session_duration && (
-                            <span className="ml-2">({participant.session_duration}m)</span>
+          <div className="space-y-6">
+            <Card className="gradient-card shadow-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-foreground">
+                  <Users className="h-5 w-5" />
+                  Participants ({participants.length}/{room.max_participants})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {participants.map((participant) => (
+                    <div
+                      key={participant.id}
+                      className="flex items-center justify-between p-3 bg-secondary/50 rounded-lg"
+                    >
+                      <div>
+                        <div className="font-medium text-foreground">
+                          {participant.profiles?.username || 'Anonymous'}
+                          {participant.user_id === user?.id && (
+                            <span className="text-xs text-primary ml-2">(You)</span>
                           )}
                         </div>
-                      )}
+                        {participant.session_title && (
+                          <div className="text-sm text-muted-foreground">
+                            Working on: {participant.session_title}
+                            {participant.session_duration && (
+                              <span className="ml-2">({participant.session_duration}m)</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="w-3 h-3 bg-success rounded-full"></div>
                     </div>
-                    <div className="w-3 h-3 bg-success rounded-full"></div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Room Music */}
+            <RoomMusic
+              musicUrl={room.music_url}
+              musicTitle={room.music_title}
+              onUpdateMusic={updateMusic}
+              isUpdating={musicUpdating}
+            />
+          </div>
         </div>
       </div>
     </div>

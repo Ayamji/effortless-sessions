@@ -166,6 +166,9 @@ export type Database = {
           id: string
           is_active: boolean | null
           max_participants: number | null
+          music_title: string | null
+          music_updated_by: string | null
+          music_url: string | null
           name: string
           updated_at: string
         }
@@ -177,6 +180,9 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           max_participants?: number | null
+          music_title?: string | null
+          music_updated_by?: string | null
+          music_url?: string | null
           name: string
           updated_at?: string
         }
@@ -188,6 +194,9 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           max_participants?: number | null
+          music_title?: string | null
+          music_updated_by?: string | null
+          music_url?: string | null
           name?: string
           updated_at?: string
         }
@@ -195,6 +204,13 @@ export type Database = {
           {
             foreignKeyName: "fk_rooms_creator_id"
             columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "rooms_music_updated_by_fkey"
+            columns: ["music_updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]

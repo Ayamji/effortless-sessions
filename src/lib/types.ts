@@ -40,6 +40,9 @@ export interface Room {
   created_at: string;
   updated_at: string;
   participant_count?: number;
+  music_url?: string;
+  music_title?: string;
+  music_updated_by?: string;
 }
 
 export interface RoomParticipant {
