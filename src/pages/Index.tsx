@@ -25,14 +25,24 @@ const Index = () => {
           </div>
           <div className="flex gap-2">
             {user ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={signOut}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Sign Out
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/rooms')}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Rooms
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
             ) : (
               <Button
                 variant="outline"
@@ -58,7 +68,7 @@ const Index = () => {
             <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full animate-pulse-glow" />
           </div>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Join collaborative study rooms, track focus sessions, and boost productivity with our community-driven platform
+            Track your focus sessions, study time, and productivity with a clean, distraction-free interface
           </p>
         </div>
 
@@ -102,18 +112,8 @@ const Index = () => {
           <Button
             variant="gradient"
             size="lg"
-            onClick={() => navigate('/rooms')}
-            className="w-full h-16 text-lg shadow-glow hover:shadow-hover transition-smooth"
-          >
-            <Users className="w-6 h-6 mr-3" />
-            Join Study Rooms
-          </Button>
-
-          <Button
-            variant="outline"
-            size="lg"
             onClick={() => navigate('/start')}
-            className="w-full h-16 text-lg hover:bg-secondary transition-smooth"
+            className="w-full h-16 text-lg shadow-glow hover:shadow-hover transition-smooth"
           >
             <Timer className="w-6 h-6 mr-3" />
             Start Session
@@ -144,11 +144,11 @@ const Index = () => {
 
           <div className="text-center">
             <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="w-6 h-6 text-primary" />
+              <TrendingUp className="w-6 h-6 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Study Rooms</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Progress Tracking</h3>
             <p className="text-muted-foreground">
-              Join collaborative study sessions with real-time participants and shared music
+              Monitor your productivity with detailed statistics and analytics
             </p>
           </div>
 
